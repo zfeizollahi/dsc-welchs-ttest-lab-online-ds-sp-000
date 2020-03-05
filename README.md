@@ -1,4 +1,3 @@
-
 # Welch's T-test - Lab
 
 ## Introduction 
@@ -67,13 +66,23 @@ treatment
 def welch_t(a, b):
     
     """ Calculate Welch's t-statistic for two samples. """
-
+    x_1, x_2 = a.mean(), b.mean()
+    numerator = x_1 - x_2
+    denominator = np.sqrt(a.var(ddof=1) /a.size + b.var(ddof=1) /b.size)
+    welch = np.abs(numerator/ denominator)
     
-    return # Return the t-score!
+    return welch# Return the t-score!
 
 welch_t(control, treatment)
 # 2.0997990691576858
 ```
+
+
+
+
+    2.0997990691576858
+
+
 
 ## Degrees of freedom
 
@@ -92,22 +101,36 @@ Write a second function to calculate degree of freedom for above samples:
 def welch_df(a, b):
     
     """ Calculate the effective degrees of freedom for two samples. """
-    return # Return the degrees of freedom
+    s1, s2 = a.var(ddof=1), b.var(ddof=1)
+    n1, n2 = a.size, b.size
+    numerator = (s1 / n1 + s2 /n2) **2
+    denominator = (s1/ n1)**2/(n1 - 1) + (s2/ n2)**2/(n2 - 1) #their solution mine: #s1 /(a.size - 1)  + s2 /(b.size -1) 
+    return numerator / denominator# Return the degrees of freedom
 
 welch_df(control, treatment)
 # 17.673079085111
 ```
+
+
+
+
+    17.673079085111
+
+
 
 Now calculate the welch t-score and degrees of freedom from the samples, a and b, using your functions.
 
 
 ```python
 # Your code here; calculate t-score and the degrees of freedom for the two samples, a and b
-t = None
-df = None
+t = welch_t(control, treatment)
+df = welch_df(control, treatment)
 print(t, df)
 # 2.0997990691576858 17.673079085111
 ```
+
+    2.0997990691576858 17.673079085111
+
 
 ## Convert to a p-value
 
@@ -118,11 +141,14 @@ Calculate the p-value associated with this experiment.
 
 ```python
 # Your code here; calculate the p-value for the two samples defined above
-
-p = None
+import scipy.stats as stats
+p = 1 - stats.t.cdf(t, df)
 print(p)
 # 0.025191666225846454
 ```
+
+    0.025191666225846454
+
 
 In this case, there is a 2.5% probability you would see a t-score equal to or greater than what you saw from the data. Given that alpha was set at 0.05, this would constitute sufficient evidence to reject the null hypothesis.
 
@@ -137,7 +163,12 @@ With that, define a summative function `p_val_welch(a, b, two_sided=False)` whic
 ```python
 def p_value(a, b, two_sided=False):
     # Your code here
-    return # Return the p-value!
+    t = welch_t(a, b)
+    df = welch_df(a, b)
+    p = 1- stats.t.cdf(np.abs(t),df)
+    if two_sided:
+        p = p * 2
+    return p# Return the p-value!
 ```
 
 Now briefly test your function; no need to write any code just run the cells below to ensure your function is operating properly. The output should match the commented values.
@@ -149,10 +180,24 @@ p_value(treatment, control)
 ```
 
 
+
+
+    0.025191666225846454
+
+
+
+
 ```python
-p_value(treatment, control, two_side=True)
+p_value(treatment, control, two_sided=True)
 # 0.05038333245169291
 ```
+
+
+
+
+    0.05038333245169291
+
+
 
 ## Summary
 
